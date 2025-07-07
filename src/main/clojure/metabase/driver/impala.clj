@@ -104,14 +104,15 @@
          [_ {:keys [host port dbname user password ssl additional-options] :as details}]
          (let [port (or port 21050)
                dbname (or dbname "default")
-               ;; 添加性能优化参数
-               timeout-params "SocketTimeout=300000;LoginTimeout=60000;QueryTimeout=600000"
-               base-url (str "//" host ":" port "/" dbname)
-               url (cond-> base-url
-                     ssl (str "?ssl=1&" timeout-params)
-                     (not ssl) (str "?" timeout-params)
-                     (and additional-options (not (clojure.string/blank? additional-options)))
-                     (str "&" additional-options))]
+               ;; 构建Cloudera Impala JDBC连接参数
+               connection-params (str "Host=" host ";Port=" port ";Schema=" dbname ";SocketTimeout=300000;LoginTimeout=60000;QueryTimeout=600000")
+               connection-params (if ssl
+                                 (str connection-params ";ssl=1")
+                                 connection-params)
+               connection-params (if (and additional-options (not (clojure.string/blank? additional-options)))
+                                 (str connection-params ";" additional-options)
+                                 connection-params)
+               url (str "//" host ":" port "/" dbname ";" connection-params)]
            (merge
              {:classname "com.cloudera.impala.jdbc.Driver"
               :subprotocol "impala"
