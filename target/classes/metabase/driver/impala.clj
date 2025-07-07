@@ -94,7 +94,8 @@
                              table (with-open [rs (.getTables metadata db-name-or-nil schema "%"
                                                               (into-array String ["TABLE" "VIEW" "FOREIGN TABLE" "MATERIALIZED VIEW"]))]
                                      (jdbc/metadata-result rs))]
-                          (assoc table :schema schema))]
+                          {:name (:table_name table)
+                           :schema schema})]
              (log/info "Found" (count tables) "tables in schemas:" schemas)
              (set tables))
            (catch Exception e
@@ -107,9 +108,11 @@
       '(defmethod metabase.driver/describe-database :impala
          [driver database]
          (try
-           (let [tables (metabase.driver.sql-jdbc.sync/active-tables driver (:details database))]
-             (log/info "Describing database with" (count tables) "tables")
-             {:tables (set (map #(select-keys % [:name :schema]) tables))})
+           (with-open [conn (jdbc/get-connection (metabase.driver.sql-jdbc.conn/connection-details->spec driver (:details database)))]
+             (let [metadata (.getMetaData conn)
+                   tables (metabase.driver.sql-jdbc.sync/active-tables driver metadata)]
+               (log/info "Describing database with" (count tables) "tables")
+               {:tables (set (map #(select-keys % [:name :schema]) tables))}))
            (catch Exception e
              (log/error e "Error in describe-database for Impala")
              {:tables #{}}))))
