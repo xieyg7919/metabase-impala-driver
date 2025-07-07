@@ -77,25 +77,71 @@
          #{"information_schema" "sys" "_impala_builtins"}))
     (log/info "excluded-schemas multimethod defined")
     
-    ;; Define active-tables multimethod using default fast implementation
+    ;; Define active-tables multimethod with custom implementation
     (eval
       '(defmethod metabase.driver.sql-jdbc.sync/active-tables :impala
-         [driver metadata & [db-name-or-nil]]
-         (metabase.driver.sql-jdbc.sync/fast-active-tables driver metadata db-name-or-nil)))
+         [driver ^java.sql.DatabaseMetaData metadata & [db-name-or-nil]]
+         (try
+           (let [excluded (metabase.driver.sql-jdbc.sync/excluded-schemas driver)
+                 schemas (if db-name-or-nil
+                          [db-name-or-nil]
+                          (with-open [rs (.getSchemas metadata)]
+                            (->> (jdbc/metadata-result rs)
+                                 (map :table_schem)
+                                 (remove excluded)
+                                 (remove nil?))))
+                 tables (for [schema schemas
+                             table (with-open [rs (.getTables metadata db-name-or-nil schema "%"
+                                                              (into-array String ["TABLE" "VIEW" "FOREIGN TABLE" "MATERIALIZED VIEW"]))]
+                                     (jdbc/metadata-result rs))]
+                          (assoc table :schema schema))]
+             (log/info "Found" (count tables) "tables in schemas:" schemas)
+             (set tables))
+           (catch Exception e
+             (log/error e "Error in active-tables for Impala")
+             #{}))))
     (log/info "active-tables multimethod defined")
     
     ;; Define describe-database multimethod
     (eval
       '(defmethod metabase.driver/describe-database :impala
-         [driver db-or-id-or-spec]
-         (metabase.driver.sql-jdbc.sync/describe-database driver db-or-id-or-spec)))
+         [driver database]
+         (try
+           (let [tables (metabase.driver.sql-jdbc.sync/active-tables driver (:details database))]
+             (log/info "Describing database with" (count tables) "tables")
+             {:tables (set (map #(select-keys % [:name :schema]) tables))})
+           (catch Exception e
+             (log/error e "Error in describe-database for Impala")
+             {:tables #{}}))))
     (log/info "describe-database multimethod defined")
     
     ;; Define describe-table multimethod
     (eval
       '(defmethod metabase.driver/describe-table :impala
-         [driver db-or-id-or-spec table]
-         (metabase.driver.sql-jdbc.sync/describe-table driver db-or-id-or-spec table)))
+         [driver database table]
+         (try
+           (let [spec (metabase.driver.sql-jdbc.conn/connection-details->spec driver (:details database))
+                 table-name (if (:schema table)
+                             (str (:schema table) "." (:name table))
+                             (:name table))
+                 columns (with-open [conn (jdbc/get-connection spec)]
+                          (jdbc/query conn [(str "DESCRIBE " table-name)]))
+                 fields (set (map-indexed
+                             (fn [idx col]
+                               {:name (:name col)
+                                :database-type (:type col)
+                                :base-type (metabase.driver.sql-jdbc.sync/database-type->base-type driver (:type col))
+                                :database-position idx})
+                             columns))]
+             (log/info "Describing table" table-name "with" (count fields) "fields")
+             {:name (:name table)
+              :schema (:schema table)
+              :fields fields})
+           (catch Exception e
+             (log/error e "Error in describe-table for Impala table:" (:name table))
+             {:name (:name table)
+              :schema (:schema table)
+              :fields #{}}))))
     (log/info "describe-table multimethod defined")
     
     (log/info "Impala driver registration completed successfully")
