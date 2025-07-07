@@ -77,21 +77,19 @@
          #{"information_schema" "sys" "_impala_builtins"}))
     (log/info "excluded-schemas multimethod defined")
     
-    ;; Define active-tables multimethod with custom implementation
+    ;; Define active-tables multimethod
     (eval
       '(defmethod metabase.driver.sql-jdbc.sync/active-tables :impala
-         [driver ^java.sql.DatabaseMetaData metadata & [db-name-or-nil]]
+         [driver ^java.sql.DatabaseMetaData metadata]
          (try
            (let [excluded (metabase.driver.sql-jdbc.sync/excluded-schemas driver)
-                 schemas (if db-name-or-nil
-                          [db-name-or-nil]
-                          (with-open [rs (.getSchemas metadata)]
-                            (->> (jdbc/metadata-result rs)
-                                 (map :table_schem)
-                                 (remove excluded)
-                                 (remove nil?))))
+                 schemas (with-open [rs (.getSchemas metadata)]
+                           (->> (jdbc/metadata-result rs)
+                                (map :table_schem)
+                                (remove excluded)
+                                (remove nil?)))
                  tables (for [schema schemas
-                             table (with-open [rs (.getTables metadata db-name-or-nil schema "%"
+                             table (with-open [rs (.getTables metadata nil schema "%"
                                                               (into-array String ["TABLE" "VIEW" "FOREIGN TABLE" "MATERIALIZED VIEW"]))]
                                      (jdbc/metadata-result rs))]
                           {:name (:table_name table)
@@ -112,7 +110,7 @@
              (let [metadata (.getMetaData conn)
                    tables (metabase.driver.sql-jdbc.sync/active-tables driver metadata)]
                (log/info "Describing database with" (count tables) "tables")
-               {:tables (set (map #(select-keys % [:name :schema]) tables))}))
+               {:tables tables}))
            (catch Exception e
              (log/error e "Error in describe-database for Impala")
              {:tables #{}}))))
@@ -230,7 +228,22 @@
    "BINARY"     :type/*
    "ARRAY"      :type/*
    "MAP"        :type/*
-   "STRUCT"     :type/*})
+   "STRUCT"     :type/*
+   
+   ;; Oracle/Enterprise specific types that may appear in Impala
+   "MGMT_JOB_VECTOR_PARAMS" :type/Text
+   "XMLTYPE"    :type/Text
+   "CLOB"       :type/Text
+   "BLOB"       :type/*
+   "NCLOB"      :type/Text
+   "NVARCHAR2"  :type/Text
+   "VARCHAR2"   :type/Text
+   "NUMBER"     :type/Decimal
+   "RAW"        :type/*
+   "LONG"       :type/Text
+   "LONG_RAW"   :type/*
+   "ROWID"      :type/Text
+   "UROWID"     :type/Text})
 
 (defn database-type->base-type
   "Map Impala database type to Metabase base type with enhanced parsing."
@@ -244,8 +257,11 @@
                        ;; Remove array notation like ARRAY<STRING> -> ARRAY
                        (str/replace #"<[^>]*>" ""))
         base-type (get impala-type-mappings clean-type :type/*)]
-    (log/debug (format "Mapping Impala type '%s' (cleaned: '%s') to Metabase type '%s'"
-                       database-type clean-type base-type))
+    (if (= base-type :type/*)
+      (log/warn (format "Unknown Impala type '%s' (cleaned: '%s'), falling back to :type/*. Consider adding this type to impala-type-mappings."
+                        database-type clean-type))
+      (log/debug (format "Mapping Impala type '%s' (cleaned: '%s') to Metabase type '%s'"
+                         database-type clean-type base-type)))
     base-type))
 
 ;; SQL dialect functions for Impala
