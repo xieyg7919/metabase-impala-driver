@@ -243,7 +243,8 @@
    "LONG"       :type/Text
    "LONG_RAW"   :type/*
    "ROWID"      :type/Text
-   "UROWID"     :type/Text})
+   "UROWID"     :type/Text
+   "EXF$INDEXOPER" :type/Text})
 
 (defn database-type->base-type
   "Map Impala database type to Metabase base type with enhanced parsing."
