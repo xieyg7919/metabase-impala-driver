@@ -1,0 +1,52 @@
+info:
+  name: Metabase Apache Impala Driver
+  version: 1.0.0
+  description: Allows Metabase to connect to Apache Impala databases.
+
+driver:
+  name: impala
+  display-name: Apache Impala
+  lazy-load: true
+  parent: sql-jdbc
+  connection-properties:
+    - name: host
+      display-name: Host
+      helper-text: The hostname or IP address of the Impala server
+      placeholder: localhost
+      required: true
+    - name: port
+      display-name: Port
+      helper-text: The port number for the Impala server (default 21050)
+      placeholder: "21050"
+      type: integer
+      default: 21050
+    - name: dbname
+      display-name: Database
+      helper-text: The name of the database to connect to
+      placeholder: default
+      required: false
+    - name: user
+      display-name: Username
+      helper-text: The username to use when connecting to the database
+      required: false
+    - name: password
+      display-name: Password
+      helper-text: The password to use when connecting to the database
+      type: password
+      required: false
+    - name: ssl
+      display-name: Use SSL
+      helper-text: Enable SSL connection to the Impala server
+      type: boolean
+      default: false
+      required: false
+    - name: additional-options
+      display-name: Additional JDBC Options
+      helper-text: Additional JDBC connection options
+      required: false
+
+init:
+  - step: load-namespace
+    namespace: metabase.driver.impala
+  - step: register-jdbc-driver
+    class: com.cloudera.impala.jdbc.Driver
