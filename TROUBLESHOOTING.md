@@ -1,30 +1,30 @@
-# Troubleshooting Guide
+# 故障排除指南
 
-This guide helps you resolve common issues when building and using the Metabase Impala Driver.
+本指南帮助您解决构建和使用 Metabase Impala 驱动时的常见问题。
 
-## Build Issues
+## 构建问题
 
-### 1. ImpalaJDBC42 Driver Not Found
+### 1. 找不到 ImpalaJDBC42 驱动
 
-**Error Message**:
+**错误信息**:
 ```
 Could not find artifact Impala:ImpalaJDBC42:jar:2.6.26.1031
 ```
 
-**Solution**:
-The Cloudera Impala JDBC driver is not available in public Maven repositories and must be installed manually.
+**解决方案**:
+Cloudera Impala JDBC 驱动在公共 Maven 仓库中不可用，必须手动安装。
 
-**Automatic Installation**:
+**自动安装**:
 ```bash
-# Run the installation script
+# 运行安装脚本
 install-impala-driver.bat
 ```
 
-**Manual Installation**:
-1. Download the Impala JDBC Driver from [Cloudera Downloads](https://www.cloudera.com/downloads/connectors/impala/jdbc/)
-2. Extract the downloaded archive
-3. Find the `ImpalaJDBC42.jar` file
-4. Install it to your local Maven repository:
+**手动安装**:
+1. 从 [Cloudera 下载页面](https://www.cloudera.com/downloads/connectors/impala/jdbc/) 下载 Impala JDBC 驱动
+2. 解压下载的压缩包
+3. 找到 `ImpalaJDBC42.jar` 文件
+4. 将其安装到本地 Maven 仓库:
    ```bash
    mvn install:install-file -Dfile=ImpalaJDBC42.jar -DgroupId=Impala -DartifactId=ImpalaJDBC42 -Dversion=2.6.26.1031 -Dpackaging=jar
    ```

@@ -5,7 +5,7 @@
 (def version "1.0.0")
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
-(def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
+(def uber-file "target/metabase-impala-driver.jar")
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
 
 (defn clean [_]
