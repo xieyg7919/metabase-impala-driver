@@ -70,6 +70,34 @@
          (metabase.driver.impala/database-type->base-type database-type)))
     (log/info "database-type->base-type multimethod defined")
     
+    ;; Define excluded-schemas multimethod
+    (eval
+      '(defmethod metabase.driver.sql-jdbc.sync/excluded-schemas :impala
+         [_]
+         #{"information_schema" "sys" "_impala_builtins"}))
+    (log/info "excluded-schemas multimethod defined")
+    
+    ;; Define active-tables multimethod using default fast implementation
+    (eval
+      '(defmethod metabase.driver.sql-jdbc.sync/active-tables :impala
+         [driver metadata & [db-name-or-nil]]
+         (metabase.driver.sql-jdbc.sync/fast-active-tables driver metadata db-name-or-nil)))
+    (log/info "active-tables multimethod defined")
+    
+    ;; Define describe-database multimethod
+    (eval
+      '(defmethod metabase.driver/describe-database :impala
+         [driver db-or-id-or-spec]
+         (metabase.driver.sql-jdbc.sync/describe-database driver db-or-id-or-spec)))
+    (log/info "describe-database multimethod defined")
+    
+    ;; Define describe-table multimethod
+    (eval
+      '(defmethod metabase.driver/describe-table :impala
+         [driver db-or-id-or-spec table]
+         (metabase.driver.sql-jdbc.sync/describe-table driver db-or-id-or-spec table)))
+    (log/info "describe-table multimethod defined")
+    
     (log/info "Impala driver registration completed successfully")
     (catch Exception e
       (log/error e "Failed to register Impala driver and multimethods"))))
