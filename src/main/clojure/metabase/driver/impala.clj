@@ -106,7 +106,7 @@
                dbname (or dbname "default")
                ;; 添加性能优化参数
                timeout-params "SocketTimeout=300000;LoginTimeout=60000;QueryTimeout=600000"
-               base-url (str "jdbc:impala://" host ":" port "/" dbname)
+               base-url (str "//" host ":" port "/" dbname)
                url (cond-> base-url
                      ssl (str "?ssl=1&" timeout-params)
                      (not ssl) (str "?" timeout-params)
