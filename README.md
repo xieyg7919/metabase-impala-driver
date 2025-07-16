@@ -1,7 +1,7 @@
 
 <div>
-    <img src="https://www.metabase.com/images/logo.svg" min-width="200px">
-    <img src="static/apache-impala-logo-1.webp" min-width="200px">
+    <img src="https://www.metabase.com/images/logo.svg" width="200px" />
+    <img src="static/apache-impala-logo-1.webp" width="180px" />
 </div>
 
 # Metabase Impala Driver
