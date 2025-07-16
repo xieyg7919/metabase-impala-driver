@@ -1,3 +1,6 @@
+<img src="https://www.metabase.com/images/logo.svg" width="200px" align="center">
+<img src="static/apache-impala-logo-1.webp" width="200px" align="center">
+
 # Metabase Impala Driver
 
 这是一个为Metabase设计的Apache Impala数据库驱动程序，基于ClickHouse驱动的实现模式开发。
@@ -101,3 +104,5 @@ clojure -M:test
 ## 版本历史
 
 - v1.0.0: 初始版本，支持基本的Impala连接和查询功能
+
+![Metabase and Impala Logos](https://www.metabase.com/images/logo.svg)
