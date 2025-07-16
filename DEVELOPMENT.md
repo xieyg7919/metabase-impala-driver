@@ -28,21 +28,23 @@ git --version
 
 ```
 impala-metabase/
-├── deps.edn                    # 项目依赖和配置
-├── build.clj                   # 构建脚本
-├── README.md                   # 项目说明
-├── DEVELOPMENT.md              # 开发指南（本文档）
-├── deploy.bat                  # 部署脚本
-├── dev.bat                     # 开发工具脚本
+├── deps.edn                                    # 项目依赖和配置
+├── build.clj                                   # 构建脚本
+├── README.md                                   # 项目说明
+├── DEVELOPMENT.md                              # 开发指南（本文档）
+├── deploy.bat                                  # 部署脚本
+├── dev.bat                                     # 开发工具脚本
 ├── resources/
-│   └── metabase-plugin.yaml    # Metabase插件配置
+│   └── metabase-plugin.yaml                    # Metabase插件配置
 ├── src/main/clojure/
 │   └── metabase/driver/
-│       └── impala.clj          # 驱动核心实现
+│       ├── impala.clj                          # 驱动核心实现
+│       ├── impala-introspection.clj            # 驱动内省实现
+│       └── impala-qp.clj                       # 驱动查询和日期转换处理等实现
 ├── test/
 │   └── metabase/driver/
-│       └── impala_test.clj     # 单元测试
-└── target/                     # 构建输出目录
+│       └── impala_test.clj                     # 单元测试
+└── target/                                     # 构建输出目录
     └── metabase-impala-driver.jar
 ```
 
@@ -53,7 +55,7 @@ impala-metabase/
 ```bash
 # 克隆项目
 git clone <repository-url>
-cd impala-metabase
+cd impala-metabase-driver
 
 # 构建项目
 clojure -T:build uber

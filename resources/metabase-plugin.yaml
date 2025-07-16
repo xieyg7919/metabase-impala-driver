@@ -34,12 +34,6 @@ driver:
     - ssl
     - ssh-tunnel
     - advanced-options-start
-    - name: use-no-proxy
-      display-name: Disable system wide proxy settings
-      default: false
-      type: boolean
-      visible-if:
-        advanced-options: true
     - name: max-open-connections
       display-name: "Max open HTTP connections in the JDBC driver (default: 100)"
       placeholder: 100

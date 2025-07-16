@@ -12,14 +12,19 @@
 
 **重要**: 此驱动包不包含Impala JDBC驱动依赖，您需要单独下载：
 
-#### 选项1: 使用Hive JDBC驱动（推荐）
-Impala支持Hive JDBC接口，您可以下载Hive JDBC驱动：
-- 下载地址: https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc
-- 推荐版本: 3.1.3
-
-#### 选项2: 使用Cloudera Impala JDBC驱动
-- 从Cloudera官网下载Impala JDBC驱动
-- 下载地址: https://www.cloudera.com/downloads/connectors/impala/jdbc.html
+#### 选项1: 从Cloudera官方仓库下载Impala JDBC驱动
+- 从Cloudera官方仓库下载Impala JDBC驱动
+- 下载地址: https://repository.cloudera.com/repository/cloudera-repos/Impala/ImpalaJDBC42/2.6.33.1062/ImpalaJDBC42-2.6.33.1062.jar
+#### 选项2: 使用Maven下载Impala JDBC驱动
+- 在项目的`pom.xml`中添加以下依赖：
+```xml
+<dependency>
+    <groupId>Impala</groupId>
+    <artifactId>ImpalaJDBC42</artifactId>
+    <version>2.6.33.1602</version>
+</dependency>
+```
+- 然后使用Maven构建项目，下载依赖。
 
 ### 3. 安装到Metabase
 
@@ -27,31 +32,20 @@ Impala支持Hive JDBC接口，您可以下载Hive JDBC驱动：
 2. 将Impala JDBC驱动JAR文件也复制到同一个plugins目录
 3. 重启Metabase
 
-## 连接配置
+## 4. 连接配置
 
-### 使用Hive JDBC驱动连接Impala
+#  基本连接属性
 
 - **主机**: Impala服务器地址
-- **端口**: 21050 (默认Impala JDBC端口)
-- **数据库**: default (或指定的数据库名)
-- **用户名**: 您的用户名
-- **密码**: 您的密码
+- **端口**: Impala JDBC端口(默认21050)
+- **数据库**: 需要连接的Impala数据库名称（默认为default，可以指定多个，多个数据库之间用空格分隔）
+- **用户名**: 数据库用户名(默认为空，表示不需要用户名)
+- **密码**: 数据库密码（默认为空，表示不需要密码）
 
-### 连接字符串示例
+# 高级连接属性
 
-```
-jdbc:hive2://your-impala-host:21050/default;auth=noSasl
-```
-
-对于需要认证的环境：
-```
-jdbc:hive2://your-impala-host:21050/default;user=username;password=password
-```
-
-对于Kerberos认证：
-```
-jdbc:hive2://your-impala-host:21050/default;principal=impala/hostname@REALM
-```
+- **SSL**: 是否启用SSL（默认关闭）
+- **Scan all databases**：是否扫描所有的数据库（默认为否，表示只扫描当前指定的数据库，如果设置为是，则会自动扫描所有的数据库）
 
 ## 功能特性
 
@@ -79,10 +73,8 @@ tail -f /path/to/metabase/logs/metabase.log
 
 ## 依赖
 
-- Apache Hive JDBC驱动 (org.apache.hive/hive-jdbc) - 包含Impala JDBC驱动类
+- Apache Impala JDBC驱动
 - Clojure相关依赖
-
-**注意**: 虽然使用Hive JDBC依赖包，但实际使用的是其中包含的 `com.cloudera.impala.jdbc.Driver` 驱动类。
 
 ## 开发
 
