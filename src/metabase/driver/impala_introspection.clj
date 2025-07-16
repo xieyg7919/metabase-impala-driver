@@ -8,7 +8,7 @@
             [metabase.driver.sql-jdbc.sync :as sql-jdbc.sync]
             [metabase.driver.sql-jdbc.sync.describe-table :as sql-jdbc.describe-table]
             [metabase.util :as u])
-  (:import (java.sql DatabaseMetaData)))
+  )
 
 (set! *warn-on-reflection* true)
 
@@ -92,15 +92,6 @@
               schema-pattern
               "%"            ; tablePattern "%" = match all tables
               allowed-table-types))
-;
-;(defn- not-inner-mv-table?
-;  [table]
-;  (not (str/starts-with? (:table_name table) ".inner")))
-
-;(defn- ->spec
-;  [db]
-;  (if (u/id db)
-;    (sql-jdbc.conn/db->pooled-connection-spec db) db))
 
 ;; 转换为规格
 (defn- ->spec
@@ -117,9 +108,6 @@
                               (vec)
                               (filter #(not (contains? (sql-jdbc.sync/excluded-schemas :impala) (:table_schem %))))
                               (tables-set))))
-
-;; Strangely enough, the tests only work with :db keyword,
-;; but the actual sync from the UI uses :dbname
 
 ;; 获取数据库名称
 (defn- get-db-name

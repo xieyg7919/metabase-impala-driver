@@ -2,29 +2,13 @@
   "Apache Impala driver: QueryProcessor-related definition"
   #_{:clj-kondo/ignore [:unsorted-required-namespaces]}
   (:require [clojure.string :as str]
-            [honey.sql :as sql]
-            [java-time.api :as t]
-            ;[metabase.driver.clickhouse-nippy]
-            ;[metabase.driver.clickhouse-version :as clickhouse-version]
             [metabase.driver.sql-jdbc.execute :as sql-jdbc.execute]
             [metabase.driver.sql.query-processor :as sql.qp :refer [add-interval-honeysql-form]]
-            [metabase.driver.sql.util :as sql.u]
-            [metabase.driver.sql.util.unprepare :as unprepare]
-            [metabase.legacy-mbql.util :as mbql.u]
             [metabase.query-processor.timezone :as qp.timezone]
-            [metabase.util :as u]
             [metabase.util.log :as log]
             [metabase.util.date-2 :as u.date]
             [metabase.util.honey-sql-2 :as h2x])
-  (:import [java.sql ResultSet ResultSetMetaData Types]
-           [java.time
-            LocalDate
-            LocalDateTime
-            LocalTime
-            OffsetDateTime
-            OffsetTime
-            ZonedDateTime]
-           java.util.Arrays))
+  )
 
 (defmethod driver/connection-properties :impala
   [_]
@@ -71,12 +55,6 @@
 (defmethod sql.qp/quote-style :impala[_] :mysql)
 
 ;; 获取报告时区ID
-;(defn- get-report-timezone-id-safely
-;  []
-;  (try
-;    (qp.timezone/report-timezone-id-if-supported)
-;    (catch Throwable _e nil)))
-
 (defn- get-report-timezone-id-safely
   []
   (try
@@ -117,11 +95,6 @@
 ;;; ------------------------------------------------------------------------------------
 ;;; 日期提取函数
 ;;; ------------------------------------------------------------------------------------
-
-;(defn- date-extract
-;  [impala-fn expr db-type]
-;  (-> [impala-fn expr]
-;      (h2x/with-database-type-info db-type)))
 (defn- impala-date-extract
   [unit expr]
   (let [impala-unit (case unit
@@ -196,7 +169,6 @@
 ;;; ------------------------------------------------------------------------------------
 ;;; 日期截断函数（统一使用impala-date-trunc实现）
 ;;; ------------------------------------------------------------------------------------
-
 (defn- impala-date-trunc
   [unit expr]
   (case unit
@@ -255,16 +227,6 @@
   [_ _ expr]
   [:'from_unixtime (h2x// expr 1000000)])
 
-;(defmethod sql-jdbc.execute/read-column-thunk [:impala java.sql.Types/TIMESTAMP]
-;  [& args]
-;  (let [rs (first (filter #(instance? java.sql.ResultSet %) args))
-;        i (some #(when (integer? %) %) args)]
-;    (fn []
-;      (try
-;        (if-let [s (.getString rs i)]  ; 直接获取字符串形式
-;          (java.sql.Timestamp/valueOf s)
-;          nil)
-;        (catch Exception e nil)))))
 ;; 确保读取时为timestamp类型
 (defmethod sql-jdbc.execute/read-column-thunk [:impala java.sql.Types/TIMESTAMP]
   [& args]
