@@ -1,17 +1,20 @@
-<img src="https://www.metabase.com/images/logo.svg" width="200px" align="center">
-<img src="static/apache-impala-logo-1.webp" width="200px" align="center">
+
+<div>
+    <img src="https://www.metabase.com/images/logo.svg" min-width="200px">
+    <img src="static/apache-impala-logo-1.webp" min-width="200px">
+</div>
 
 # Metabase Impala Driver
 
-这是一个为Metabase设计的Apache Impala数据库驱动程序，基于ClickHouse驱动的实现模式开发。
+这是一个为Metabase设计的Apache Impala数据库驱动程序
 
-## 安装说明
+## 1. 安装说明
 
-### 1. 下载驱动JAR包
+### 下载驱动JAR包
 
 从releases页面下载 `metabase-impala-driver.jar` 文件。
 
-### 2. 下载Impala JDBC驱动
+### 下载Impala JDBC驱动
 
 **重要**: 此驱动包不包含Impala JDBC驱动依赖，您需要单独下载：
 
@@ -29,15 +32,15 @@
 ```
 - 然后使用Maven构建项目，下载依赖。
 
-### 3. 安装到Metabase
+### 安装到Metabase
 
 1. 将 `metabase-impala-driver.jar` 复制到Metabase的plugins目录
 2. 将Impala JDBC驱动JAR文件也复制到同一个plugins目录
 3. 重启Metabase
 
-## 4. 连接配置
+### 连接配置
 
-#  基本连接属性
+####  基本连接属性
 
 - **主机**: Impala服务器地址
 - **端口**: Impala JDBC端口(默认21050)
@@ -45,12 +48,12 @@
 - **用户名**: 数据库用户名(默认为空，表示不需要用户名)
 - **密码**: 数据库密码（默认为空，表示不需要密码）
 
-# 高级连接属性
+#### 高级连接属性
 
 - **SSL**: 是否启用SSL（默认关闭）
 - **Scan all databases**：是否扫描所有的数据库（默认为否，表示只扫描当前指定的数据库，如果设置为是，则会自动扫描所有的数据库）
 
-## 功能特性
+## 2. 功能特性
 
 - 支持基本的SQL查询
 - 支持数据库内省（表、列、类型等）
@@ -59,7 +62,7 @@
 - 支持SSH隧道
 - 支持Kerberos认证
 
-## 故障排除
+## 3.故障排除
 
 ### 常见问题
 
@@ -67,24 +70,24 @@
 2. **驱动未找到**: 确保JDBC驱动JAR文件在plugins目录中
 3. **认证失败**: 检查用户名、密码或Kerberos配置
 
-### 日志调试
+## 4.日志调试
 
 在Metabase日志中查看详细错误信息：
 ```
 tail -f /path/to/metabase/logs/metabase.log
 ```
 
-## 依赖
+## 5.依赖
 
 - Apache Impala JDBC驱动
 - Clojure相关依赖
 
-## 开发
+## 6.开发
 
 ### 构建驱动
 
 ```bash
-clojure -T:build jar
+clojure -T:build uber
 ```
 
 ### 测试
@@ -93,16 +96,14 @@ clojure -T:build jar
 clojure -M:test
 ```
 
-## 许可证
+## 7.许可证
 
 本项目采用Apache 2.0许可证。
 
-## 贡献
+## 8.贡献
 
 欢迎提交Issue和Pull Request！
 
-## 版本历史
+## 9.版本历史
 
 - v1.0.0: 初始版本，支持基本的Impala连接和查询功能
-
-![Metabase and Impala Logos](https://www.metabase.com/images/logo.svg)

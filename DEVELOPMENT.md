@@ -2,11 +2,11 @@
 
 本文档提供了Metabase Impala驱动的详细开发指南。
 
-## 开发环境设置
+## 1. 开发环境设置
 
 ### 前置要求
 
-- Java 11 或更高版本
+- Java 8 或更高版本
 - Clojure CLI tools
 - Git
 - 文本编辑器或IDE（推荐IntelliJ IDEA + Cursive插件）
@@ -24,7 +24,7 @@ clojure -version
 git --version
 ```
 
-## 项目结构
+## 2. 项目结构
 
 ```
 impala-metabase/
@@ -48,9 +48,9 @@ impala-metabase/
     └── metabase-impala-driver.jar
 ```
 
-## 开发工作流
+## 3. 开发工作流
 
-### 1. 快速开始
+###  快速开始
 
 ```bash
 # 克隆项目
@@ -64,7 +64,7 @@ clojure -T:build uber
 clojure -M:test
 ```
 
-### 2. 使用开发脚本
+### 使用开发脚本
 
 项目提供了便捷的开发脚本：
 
@@ -80,7 +80,7 @@ dev.bat
 # 5. 部署到本地Metabase
 ```
 
-### 3. REPL开发
+### REPL开发
 
 ```bash
 # 启动REPL
@@ -97,16 +97,16 @@ clojure -M:dev
 (metabase.driver/display-name :impala)
 ```
 
-## 核心组件说明
+## 4.核心组件说明
 
-### 1. 驱动注册 (`impala.clj`)
+### 驱动注册 (`impala.clj`)
 
 ```clojure
 ;; 注册驱动
 (driver/register! :impala :parent :sql-jdbc)
 ```
 
-### 2. 连接规范
+### 连接规范
 
 ```clojure
 ;; 将连接详情转换为JDBC规范
@@ -116,7 +116,7 @@ clojure -M:dev
   )
 ```
 
-### 3. 功能支持声明
+### 功能支持声明
 
 ```clojure
 ;; 声明驱动支持的功能
@@ -124,7 +124,7 @@ clojure -M:dev
 (defmethod driver/database-supports? [:impala :full-join] [_ _ _] false)
 ```
 
-### 4. 错误处理
+### 错误处理
 
 ```clojure
 ;; 详细的连接测试和错误诊断
@@ -139,9 +139,9 @@ clojure -M:dev
       )))
 ```
 
-## 测试策略
+## 5. 测试策略
 
-### 1. 单元测试
+### 单元测试
 
 位置：`test/metabase/driver/impala_test.clj`
 
@@ -153,7 +153,7 @@ clojure -M:test
 clojure -M:test -n metabase.driver.impala-test
 ```
 
-### 2. 集成测试
+### 集成测试
 
 需要实际的Impala实例：
 
@@ -171,16 +171,16 @@ clojure -M:test -n metabase.driver.impala-test
 clojure -M:test -i integration
 ```
 
-### 3. 手动测试
+### 手动测试
 
 1. 构建驱动JAR
 2. 部署到Metabase
 3. 在Metabase UI中测试连接
 4. 验证查询功能
 
-## 调试技巧
+##  6.调试技巧
 
-### 1. 日志调试
+### 日志调试
 
 ```clojure
 ;; 在代码中添加日志
@@ -191,7 +191,7 @@ clojure -M:test -i integration
 (log/error e "Connection failed")
 ```
 
-### 2. REPL调试
+### REPL调试
 
 ```clojure
 ;; 在REPL中测试函数
@@ -202,7 +202,7 @@ clojure -M:test -i integration
 (driver/can-connect? :impala test-details)
 ```
 
-### 3. Metabase日志
+### Metabase日志
 
 ```bash
 # 查看Metabase日志
@@ -212,9 +212,9 @@ tail -f /var/log/metabase.log | grep -i impala
 type "C:\metabase\logs\metabase.log" | findstr /i impala
 ```
 
-## 常见开发任务
+## 7. 常见开发任务
 
-### 1. 添加新功能支持
+### 添加新功能支持
 
 ```clojure
 ;; 在impala.clj中添加新的功能支持
@@ -222,7 +222,7 @@ type "C:\metabase\logs\metabase.log" | findstr /i impala
   true) ; 或 false
 ```
 
-### 2. 修改连接逻辑
+### 修改连接逻辑
 
 ```clojure
 ;; 修改connection-details->spec方法
@@ -232,7 +232,7 @@ type "C:\metabase\logs\metabase.log" | findstr /i impala
   )
 ```
 
-### 3. 改进错误处理
+### 改进错误处理
 
 ```clojure
 ;; 在detailed-connection-test中添加新的错误处理
@@ -242,7 +242,7 @@ type "C:\metabase\logs\metabase.log" | findstr /i impala
    :details (str e)})
 ```
 
-### 4. 添加测试用例
+### 添加测试用例
 
 ```clojure
 ;; 在impala_test.clj中添加新测试
@@ -251,9 +251,9 @@ type "C:\metabase\logs\metabase.log" | findstr /i impala
     (is (= expected-result (actual-function args)))))
 ```
 
-## 性能优化
+## 8.性能优化
 
-### 1. 连接池配置
+### 连接池配置
 
 ```clojure
 ;; 在连接属性中设置连接池参数
@@ -262,21 +262,21 @@ type "C:\metabase\logs\metabase.log" | findstr /i impala
  :IdleTimeout "300"}
 ```
 
-### 2. 查询优化
+### 查询优化
 
 - 使用适当的索引
 - 避免全表扫描
 - 合理使用分区
 
-### 3. 内存管理
+### 内存管理
 
 - 及时关闭连接
 - 避免内存泄漏
 - 合理设置超时时间
 
-## 发布流程
+## 9.发布流程
 
-### 1. 版本准备
+### 版本准备
 
 ```bash
 # 更新版本号
@@ -286,7 +286,7 @@ version: "1.0.1"
 # 更新 README.md 中的版本信息
 ```
 
-### 2. 测试验证
+### 测试验证
 
 ```bash
 # 运行完整测试套件
@@ -299,7 +299,7 @@ clojure -M:test
 # - JOIN操作
 ```
 
-### 3. 构建发布
+### 构建发布
 
 ```bash
 # 清理并构建
@@ -310,22 +310,22 @@ clojure -T:build uber
 jar -tf target/metabase-impala-driver.jar | head -20
 ```
 
-### 4. 文档更新
+### 文档更新
 
 - 更新 README.md
 - 更新 CHANGELOG.md
 - 更新安装指南
 
-## 贡献指南
+## 10. 贡献指南
 
-### 1. 代码风格
+### 代码风格
 
 - 遵循Clojure社区标准
 - 使用有意义的函数和变量名
 - 添加适当的文档字符串
 - 保持函数简洁
 
-### 2. 提交规范
+### 提交规范
 
 ```bash
 # 提交消息格式
@@ -337,7 +337,7 @@ fix(connection): handle timeout errors properly
 docs(readme): update installation instructions
 ```
 
-### 3. Pull Request流程
+### Pull Request流程
 
 1. Fork项目
 2. 创建功能分支
@@ -347,9 +347,9 @@ docs(readme): update installation instructions
 6. 代码审查
 7. 合并到主分支
 
-## 故障排除
+## 11. 故障排除
 
-### 1. 构建问题
+### 构建问题
 
 ```bash
 # 清理依赖缓存
@@ -357,7 +357,7 @@ rm -rf ~/.m2/repository/
 clojure -P  # 重新下载依赖
 ```
 
-### 2. 测试失败
+### 测试失败
 
 ```bash
 # 详细测试输出
@@ -367,7 +367,7 @@ clojure -M:test --reporter documentation
 clojure -M:test -v metabase.driver.impala-test/specific-test
 ```
 
-### 3. REPL问题
+### REPL问题
 
 ```bash
 # 重启REPL
@@ -378,14 +378,14 @@ clojure -M:test -v metabase.driver.impala-test/specific-test
 (all-ns)
 ```
 
-## 资源链接
+## 12. 资源链接
 
 - [Metabase驱动开发文档](https://www.metabase.com/docs/latest/developers-guide/drivers/start)
 - [Clojure官方文档](https://clojure.org/)
 - [Apache Impala文档](https://impala.apache.org/docs/build/html/)
 - [Cloudera JDBC驱动文档](https://docs.cloudera.com/)
 
-## 联系方式
+## 13.联系方式
 
 如有问题或建议，请：
 

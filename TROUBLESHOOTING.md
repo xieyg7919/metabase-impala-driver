@@ -1,8 +1,8 @@
 # Impala Driver 故障排除指南
 
-## 常见错误及解决方案
+## 1. 常见错误及解决方案
 
-### 1. NullPointerException: "Cannot invoke 'java.lang.CharSequence.length()' because 's' is null"
+### NullPointerException: "Cannot invoke 'java.lang.CharSequence.length()' because 's' is null"
 
 **错误原因：**
 - 连接详情中的必需字段（如 host、port、dbname、user）为 null 或未提供
@@ -28,7 +28,7 @@
    - Port 必须是有效的数字
    - Database 名称不能包含特殊字符
 
-### 2. 连接超时错误
+### 连接超时错误
 
 **错误症状：**
 - 连接测试长时间无响应
@@ -44,7 +44,7 @@
    [impala-driver] Query timeout: 600000 ms
    ```
 
-### 3. 认证失败
+### 认证失败
 
 **错误症状：**
 - "Authentication failed" 错误
@@ -55,7 +55,7 @@
 2. **检查认证方式**：Impala 驱动使用 LDAP 认证（AuthMech=3）
 3. **查看 SSL 设置**：确认 SSL 配置与 Impala 集群一致
 
-### 4. JDBC 驱动问题
+### JDBC 驱动问题
 
 **错误症状：**
 - "No suitable driver found for jdbc:impala://..." 错误
@@ -69,15 +69,11 @@
    ```
 
 2. **验证 JDBC URL 格式**：
-   - **正确格式**：`jdbc:hive2://host:port/database`
-   - **错误格式**：`jdbc:impala://host:port/database`
-   - 注意：我们使用 Hive JDBC 驱动连接 Impala，所以 URL 协议是 `hive2`
+   - **正确格式**：`jdbc:impala://host:port/database`
 
-3. **检查依赖**：确认 `org.apache.hive/hive-jdbc` 依赖已正确包含
+3. **重启 Metabase**：确保插件被正确加载
 
-4. **重启 Metabase**：确保插件被正确加载
-
-### 5. 驱动注册失败
+### 驱动注册失败
 
 **错误症状：**
 - 多方法注册失败
@@ -93,15 +89,15 @@
    ```
 3. **检查类路径**：确保 Hive JDBC 驱动在类路径中
 
-## 调试步骤
+## 2. 调试步骤
 
-### 1. 启用详细日志
+### 启用详细日志
 在 Metabase 启动时添加以下环境变量：
 ```bash
 MB_LOG_LEVEL=DEBUG
 ```
 
-### 2. 检查连接详情
+### 检查连接详情
 查看日志中的连接详情输出：
 ```
 [impala-driver] Raw connection details: {:host "...", :port ..., :dbname "...", :user "..."}
@@ -109,7 +105,7 @@ MB_LOG_LEVEL=DEBUG
 [impala-driver] JDBC URL: jdbc:impala://host:port/database
 ```
 
-### 3. 验证连接测试
+### 验证连接测试
 查看连接测试的详细输出：
 ```
 [impala-driver] Testing connection to host : port
@@ -118,31 +114,31 @@ MB_LOG_LEVEL=DEBUG
 [impala-driver] Connection test result: SUCCESS
 ```
 
-### 4. 检查错误堆栈
+### 检查错误堆栈
 如果出现异常，查看完整的错误堆栈：
 ```
 [impala-driver] An exception during Impala connectivity check
 java.sql.SQLException: ...
 ```
 
-## 常见配置问题
+## 3.常见配置问题
 
-### 1. 端口配置
+### 端口配置
 - **默认端口**：21050（Impala Daemon）
 - **备用端口**：21000（Impala State Store）
 - **JDBC 端口**：通常是 21050
 
-### 2. SSL 配置
+### SSL 配置
 - **启用 SSL**：设置 SSL=1
 - **禁用 SSL**：设置 SSL=0
 - **证书验证**：确保证书配置正确
 
-### 3. 超时配置
+### 超时配置
 - **连接超时**：600 秒（10 分钟）
 - **查询超时**：600 秒（10 分钟）
 - **Socket 超时**：600 秒（10 分钟）
 
-## 联系支持
+## 4. 联系支持
 
 如果问题仍然存在，请提供以下信息：
 
