@@ -1,40 +1,11 @@
-{:deps {org.clojure/clojure {:mvn/version "1.11.1"}
-        org.clojure/java.jdbc {:mvn/version "0.7.12"}
-        org.clojure/tools.logging {:mvn/version "1.2.4"}
-        honeysql/honeysql {:mvn/version "1.0.461"}
-        org.clojure/core.async {:mvn/version "1.6.673"}
-        cheshire/cheshire {:mvn/version "5.11.0"}
-        ;; Impala JDBC Driver - using local jar file
-        ;; Note: Place ImpalaJDBC42.jar in the project root directory
-        com.cloudera.impala/jdbc {:local/root "." :local/jar "ImpalaJDBC42.jar"}
-        ;; For plugin development, we'll use a simpler approach
-        ;; The Metabase classes will be available at runtime
+{:paths ["src" "resources"]
+ :mvn/repos {"cloudera" {:url "https://repository.cloudera.com/repository/cloudera-repos/"}
+             "central" {:url "https://repo1.maven.org/maven2/"}}
+ :deps {
+        ;Impala/ImpalaJDBC42 {:mvn/version "2.6.26.1031" :mvn/scope provided}
         }
- 
- :paths ["src/main/clojure" "src/main/resources"]
- 
- :aliases
- {:test {:extra-paths ["test"]
-         :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}}}
-  
-  :dev {:extra-paths ["test" "dev"]
-        :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
-                     org.clojure/tools.namespace {:mvn/version "1.4.4"}
-                     criterium/criterium {:mvn/version "0.4.6"}}}
-  
-  :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.4" :git/sha "76b78fe"}}
-          :ns-default build}
-  
-  :uberjar {:replace-deps {org.clojure/clojure {:mvn/version "1.11.1"}
-                           org.clojure/java.jdbc {:mvn/version "0.7.12"}
-                           org.clojure/tools.logging {:mvn/version "1.2.4"}
-                           honeysql/honeysql {:mvn/version "1.0.461"}
-                           org.clojure/core.async {:mvn/version "1.6.673"}
-                           cheshire/cheshire {:mvn/version "5.11.0"}
-                            com.cloudera.impala/jdbc {:local/root "." :local/jar "ImpalaJDBC42.jar"}}
-            :exec-fn clojure.tools.build.api/uber
-            :exec-args {:basis (clojure.tools.build.api/create-basis {})
-                        :lib impala/driver
-                        :version "1.0.0"
-                        :uber-file "target/impala-driver-1.0.0-standalone.jar"
-                        :main metabase.driver.impala}}}}
+ :aliases {
+           :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.4" :git/sha "76b78fe"}}
+                   :ns-default build}
+           }
+ }

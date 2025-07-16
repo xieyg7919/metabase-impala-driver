@@ -1,334 +1,155 @@
-# 故障排除指南
+# Impala Driver 故障排除指南
 
-本指南帮助您解决构建和使用 Metabase Impala 驱动时的常见问题。
+## 常见错误及解决方案
 
-## 构建问题
+### 1. NullPointerException: "Cannot invoke 'java.lang.CharSequence.length()' because 's' is null"
 
-### 1. 找不到 ImpalaJDBC42 驱动
+**错误原因：**
+- 连接详情中的必需字段（如 host、port、dbname、user）为 null 或未提供
+- Metabase UI 中的表单字段可能没有正确填写
 
-**错误信息**:
-```
-Could not find artifact Impala:ImpalaJDBC42:jar:2.6.26.1031
-```
+**解决方案：**
+1. **检查连接详情**：确保所有必需字段都已填写
+   - Host: Impala 服务器地址（不能为空）
+   - Port: 端口号（默认 21050）
+   - Database: 数据库名称（默认 "default"）
+   - Username: 用户名（可以为空）
+   - Password: 密码（可以为空）
 
-**解决方案**:
-Cloudera Impala JDBC 驱动在公共 Maven 仓库中不可用，必须手动安装。
+2. **查看详细日志**：
+   ```
+   [impala-driver] Raw connection details: {...}
+   [impala-driver] Cleaned connection details: {...}
+   [impala-driver] Cleaned values - host: ... port: ... dbname: ... user: ...
+   ```
 
-**自动安装**:
+3. **验证输入**：
+   - Host 不能为 null 或空字符串
+   - Port 必须是有效的数字
+   - Database 名称不能包含特殊字符
+
+### 2. 连接超时错误
+
+**错误症状：**
+- 连接测试长时间无响应
+- 出现 "Connection timeout" 错误
+
+**解决方案：**
+1. **检查网络连接**：确保 Metabase 服务器可以访问 Impala 集群
+2. **验证端口**：确认 Impala 服务运行在指定端口（通常是 21050）
+3. **检查防火墙**：确保防火墙允许连接到 Impala 端口
+4. **查看超时设置**：
+   ```
+   [impala-driver] Connection timeout: 600000 ms
+   [impala-driver] Query timeout: 600000 ms
+   ```
+
+### 3. 认证失败
+
+**错误症状：**
+- "Authentication failed" 错误
+- "Invalid username or password" 错误
+
+**解决方案：**
+1. **验证凭据**：确认用户名和密码正确
+2. **检查认证方式**：Impala 驱动使用 LDAP 认证（AuthMech=3）
+3. **查看 SSL 设置**：确认 SSL 配置与 Impala 集群一致
+
+### 4. JDBC 驱动问题
+
+**错误症状：**
+- "No suitable driver found for jdbc:impala://..." 错误
+- "No suitable driver found for jdbc:hive2://..." 错误
+
+**解决方案：**
+1. **检查驱动加载**：查看启动日志中的驱动加载信息：
+   ```
+   [impala-driver] Hive JDBC driver loaded successfully (supports Impala)
+   [impala-driver] Hive driver registered with DriverManager
+   ```
+
+2. **验证 JDBC URL 格式**：
+   - **正确格式**：`jdbc:hive2://host:port/database`
+   - **错误格式**：`jdbc:impala://host:port/database`
+   - 注意：我们使用 Hive JDBC 驱动连接 Impala，所以 URL 协议是 `hive2`
+
+3. **检查依赖**：确认 `org.apache.hive/hive-jdbc` 依赖已正确包含
+
+4. **重启 Metabase**：确保插件被正确加载
+
+### 5. 驱动注册失败
+
+**错误症状：**
+- 多方法注册失败
+- 驱动类找不到
+
+**解决方案：**
+1. **检查 JAR 文件**：确认 `metabase-impala-driver.jar` 在 `plugins` 目录中
+2. **验证驱动注册**：查看启动日志中的驱动加载信息：
+   ```
+   [impala-driver] Loading Impala driver
+   [impala-driver] Impala driver loaded successfully
+   [impala-driver] connection-details->spec method registered for :impala
+   ```
+3. **检查类路径**：确保 Hive JDBC 驱动在类路径中
+
+## 调试步骤
+
+### 1. 启用详细日志
+在 Metabase 启动时添加以下环境变量：
 ```bash
-# 运行安装脚本
-install-impala-driver.bat
+MB_LOG_LEVEL=DEBUG
 ```
 
-**手动安装**:
-1. 从 [Cloudera 下载页面](https://www.cloudera.com/downloads/connectors/impala/jdbc/) 下载 Impala JDBC 驱动
-2. 解压下载的压缩包
-3. 找到 `ImpalaJDBC42.jar` 文件
-4. 将其安装到本地 Maven 仓库:
-   ```bash
-   mvn install:install-file -Dfile=ImpalaJDBC42.jar -DgroupId=Impala -DartifactId=ImpalaJDBC42 -Dversion=2.6.26.1031 -Dpackaging=jar
-   ```
-
-### 2. Maven Not Found
-
-**Error Message**:
+### 2. 检查连接详情
+查看日志中的连接详情输出：
 ```
-'mvn' is not recognized as an internal or external command
+[impala-driver] Raw connection details: {:host "...", :port ..., :dbname "...", :user "..."}
+[impala-driver] Cleaned connection details: {:host "...", :port ..., :dbname "...", :user "..."}
+[impala-driver] JDBC URL: jdbc:impala://host:port/database
 ```
 
-**Solution**:
-1. Install Maven from [Apache Maven](https://maven.apache.org/download.cgi)
-2. Add Maven's `bin` directory to your system PATH
-3. Verify installation: `mvn -version`
-
-### 3. Java Version Issues
-
-**Error Message**:
+### 3. 验证连接测试
+查看连接测试的详细输出：
 ```
-Unsupported class file major version
+[impala-driver] Testing connection to host : port
+[impala-driver] Connection timeout: 600000 ms
+[impala-driver] Query timeout: 600000 ms
+[impala-driver] Connection test result: SUCCESS
 ```
 
-**Solution**:
-This driver requires Java 21. Ensure you have the correct version:
-```bash
-java -version
-# Should show version 21.x.x
+### 4. 检查错误堆栈
+如果出现异常，查看完整的错误堆栈：
+```
+[impala-driver] An exception during Impala connectivity check
+java.sql.SQLException: ...
 ```
 
-If you have multiple Java versions:
-1. Set `JAVA_HOME` to point to Java 21
-2. Update your PATH to use Java 21's `bin` directory
+## 常见配置问题
 
-### 4. Clojure CLI Issues
+### 1. 端口配置
+- **默认端口**：21050（Impala Daemon）
+- **备用端口**：21000（Impala State Store）
+- **JDBC 端口**：通常是 21050
 
-**Error Message**:
-```
-'clj' is not recognized as an internal or external command
-```
+### 2. SSL 配置
+- **启用 SSL**：设置 SSL=1
+- **禁用 SSL**：设置 SSL=0
+- **证书验证**：确保证书配置正确
 
-**Solution**:
-1. Install Clojure CLI from [Clojure.org](https://clojure.org/guides/getting_started)
-2. Alternatively, use Maven for building:
-   ```bash
-   build.bat maven
-   ```
+### 3. 超时配置
+- **连接超时**：600 秒（10 分钟）
+- **查询超时**：600 秒（10 分钟）
+- **Socket 超时**：600 秒（10 分钟）
 
-## Connection Issues
+## 联系支持
 
-### 1. Connection Timeout
+如果问题仍然存在，请提供以下信息：
 
-**Error Message**:
-```
-Connection timed out
-```
+1. **完整的错误消息**
+2. **Metabase 版本**
+3. **Impala 版本**
+4. **连接详情**（隐藏敏感信息）
+5. **相关的日志输出**
 
-**Possible Causes & Solutions**:
-
-1. **Incorrect Host/Port**:
-   - Verify the Impala server hostname/IP
-   - Default port is 21050 for Impala daemon
-   - Check if using Impala coordinator port (25000) instead
-
-2. **Firewall Issues**:
-   - Ensure port 21050 is open
-   - Check network connectivity: `telnet <host> 21050`
-
-3. **Impala Service Down**:
-   - Verify Impala daemon is running
-   - Check Impala cluster health
-
-### 2. Authentication Failed
-
-**Error Message**:
-```
-Access denied for user
-```
-
-**Solutions**:
-
-1. **Check Credentials**:
-   - Verify username and password
-   - Some Impala clusters allow anonymous access (leave username/password empty)
-
-2. **Database Access**:
-   - Ensure the user has access to the specified database
-   - Try connecting without specifying a database first
-
-3. **Kerberos Authentication**:
-   - This driver doesn't currently support Kerberos
-   - Use a non-Kerberos Impala setup for testing
-
-### 3. SSL Connection Issues
-
-**Error Message**:
-```
-SSL connection failed
-```
-
-**Solutions**:
-
-1. **Verify SSL Support**:
-   - Ensure your Impala cluster supports SSL
-   - Check if SSL is properly configured on the server
-
-2. **Certificate Issues**:
-   - Verify SSL certificates are valid
-   - For testing, try without SSL first
-
-3. **Port Configuration**:
-   - SSL-enabled Impala might use a different port
-   - Check your cluster's SSL port configuration
-
-### 4. Database Not Found
-
-**Error Message**:
-```
-Unknown database 'database_name'
-```
-
-**Solutions**:
-
-1. **Check Database Name**:
-   - Verify the database exists: `SHOW DATABASES`
-   - Database names are case-sensitive
-
-2. **Use Default Database**:
-   - Leave database field empty to connect to default
-   - Switch databases after connecting
-
-3. **Permissions**:
-   - Ensure user has access to the database
-   - Check with Impala administrator
-
-## Runtime Issues
-
-### 1. Driver Not Loaded in Metabase
-
-**Symptoms**:
-- Impala option not available in database connections
-- Driver JAR in plugins directory but not recognized
-
-**Solutions**:
-
-1. **Check JAR Location**:
-   - Ensure JAR is in Metabase's `plugins/` directory
-   - Use the correct JAR: `metabase-impala-driver-1.0.0-standalone.jar`
-
-2. **Restart Metabase**:
-   - Completely restart Metabase after adding the driver
-   - Check Metabase logs for driver loading errors
-
-3. **Verify JAR Integrity**:
-   - Ensure the JAR file is not corrupted
-   - Rebuild if necessary
-
-4. **Check Metabase Version**:
-   - This driver is built for Metabase 0.54.6
-   - Compatibility with other versions is not guaranteed
-
-### 2. Query Performance Issues
-
-**Symptoms**:
-- Slow query execution
-- Timeouts on large datasets
-
-**Solutions**:
-
-1. **Optimize Queries**:
-   - Use appropriate WHERE clauses
-   - Limit result sets for exploration
-   - Use partitioned tables when possible
-
-2. **Impala Configuration**:
-   - Increase query timeout settings
-   - Optimize Impala cluster resources
-   - Use appropriate file formats (Parquet recommended)
-
-3. **Connection Pooling**:
-   - Configure appropriate connection pool settings
-   - Monitor connection usage
-
-### 3. Data Type Issues
-
-**Symptoms**:
-- Incorrect data type detection
-- Formatting issues with dates/numbers
-
-**Solutions**:
-
-1. **Check Type Mapping**:
-   - Review the driver's type mapping logic
-   - Some complex types might not be fully supported
-
-2. **Use Explicit Casting**:
-   - Cast columns to appropriate types in Impala
-   - Use SQL expressions for complex transformations
-
-## Development Issues
-
-### 1. Test Failures
-
-**Error Message**:
-```
-Test failures in impala-test
-```
-
-**Solutions**:
-
-1. **Missing Test Dependencies**:
-   - Ensure all test dependencies are available
-   - Run: `clj -M:test` or `mvn test`
-
-2. **No Test Database**:
-   - Unit tests should pass without a database
-   - Integration tests require a test Impala instance
-
-### 2. REPL Development
-
-**Issues**:
-- Cannot connect to REPL
-- Driver not loading in development
-
-**Solutions**:
-
-1. **Start REPL with Dependencies**:
-   ```bash
-   clj -M:dev
-   ```
-
-2. **Load Driver Namespace**:
-   ```clojure
-   (require '[metabase.driver.impala :as impala])
-   ```
-
-## Getting Additional Help
-
-### Log Analysis
-
-1. **Metabase Logs**:
-   - Check Metabase application logs
-   - Look for driver loading and connection errors
-   - Enable debug logging if needed
-
-2. **Build Logs**:
-   - Review Maven/Clojure build output
-   - Check for dependency resolution issues
-
-3. **Impala Logs**:
-   - Check Impala daemon logs
-   - Review query execution logs
-   - Monitor cluster health
-
-### Useful Commands
-
-```bash
-# Check Java version
-java -version
-
-# Check Maven version
-mvn -version
-
-# Check Clojure CLI
-clj -version
-
-# Test Impala connection
-telnet <impala-host> 21050
-
-# Check if driver is installed
-mvn dependency:get -Dartifact=Impala:ImpalaJDBC42:2.6.26.1031
-
-# Clean and rebuild
-clj -T:build clean
-clj -T:build uber
-```
-
-### Community Resources
-
-- [Metabase Documentation](https://www.metabase.com/docs/)
-- [Impala Documentation](https://impala.apache.org/docs/build/html/)
-- [Cloudera JDBC Documentation](https://docs.cloudera.com/documentation/enterprise/6/6.3/topics/impala_jdbc.html)
-
-### Reporting Issues
-
-When reporting issues, please include:
-
-1. **Environment Information**:
-   - Operating System
-   - Java version
-   - Maven version
-   - Metabase version
-   - Impala version
-
-2. **Error Details**:
-   - Complete error messages
-   - Stack traces
-   - Build logs
-
-3. **Steps to Reproduce**:
-   - Exact commands used
-   - Configuration details
-   - Sample data (if applicable)
-
-4. **Expected vs Actual Behavior**:
-   - What you expected to happen
-   - What actually happened
+这些信息将帮助快速诊断和解决问题。
