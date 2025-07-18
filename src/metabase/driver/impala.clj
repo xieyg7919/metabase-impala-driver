@@ -26,33 +26,7 @@
 
 (defmethod driver/display-name :impala [_] "Apache Impala")
 
-;(defmethod driver/connection-properties :impala
-;  [_]
-;  {
-;   :user            {:label "User" :type "string"}
-;   :password        {:label "Password" :type "password"}
-;   :host            {:label "Host" :type "string"}
-;   :port            {:label "Port" :type "integer"}
-;   :dbname          {:label "Database Name" :type "string"}
-;   :connect-timeout {:label "Connect Timeout (ms)" :type "integer" :default 10}
-;   :socket-timeout  {:label "Socket Timeout (ms)" :type "integer" :default 30}
-;   :max-pool-size   {:label "Max Connection Pool Size" :type "integer" :default 10}})
-
-;(defmethod driver/connection-properties :impala
-;  [_]
-;  (let [props
-;        {:user            {:label "User" :type "string" :require false}
-;         :password        {:label "Password" :type "password" :require false}
-;         :host            {:label "Host" :type "string" :default "localhost"}
-;         :port            {:label "Port" :type "integer" :default 21050}
-;         :dbname          {:label "Database Name" :type "string" :default "default"}
-;         :connect-timeout {:label "Connect Timeout (ms)" :type "integer" :default 10}
-;         :socket-timeout  {:label "Socket Timeout (ms)" :type "integer" :default 30}
-;         :max-pool-size   {:label "Max Connection Pool Size" :type "integer" :default 10}}]
-;    (log/info "connection-properties type:" (type props))
-;    props))
-
-(defmethod driver/prettify-native-form :clickhouse
+(defmethod driver/prettify-native-form :impala
   [_ native-form]
   (sql.u/format-sql-and-fix-params :mysql native-form))
 
@@ -76,7 +50,7 @@
 
 (def ^:private default-connection-details
   {:user "" :password "" :dbname "default" :host "localhost" :port 21050
-   :ssl false :query-timeout 300 :socket-timeout 30 :batch-size 10000 :charset "UTF-8"})
+   :ssl false :query-timeout 300 :socket-timeout 30 :charset "UTF-8"})
 
 (defmethod driver/database-supports? [:impala :set-timezone]
   [_driver _feature _db]
@@ -104,9 +78,6 @@
                  (str/starts-with? host "http://")  (subs host 7)
                  (str/starts-with? host "https://") (subs host 8)
                  :else host)
-        ;url (str "//" host ":" port "/" dbname
-        ;    ";QueryTimeout=" query-timeout ";SocketTimeout=" socket-timeout ";BatchSize=" batch-size
-        ;         ";Charset=" charset)
         ]
     (->
       {:classname                      "com.cloudera.impala.jdbc.Driver"

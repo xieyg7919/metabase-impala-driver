@@ -13,11 +13,13 @@ driver:
   connection-properties:
     - name: host
       display-name: Host
+      placeholder: localhost
       default: localhost
       required: true
     - name:  port
       display-name: Port
-      default: "21050"
+      placeholder: 21050
+      default: 21050
       type: integer
       required: false
     - name: user
@@ -28,13 +30,14 @@ driver:
       required: false
     - name: dbname
       display-name: Databases
+      placeholder: "default"
       default: "default"
       helper-text: "To specify multiple databases, separate them by the space symbol. For example: default data logs."
     - name: scan-all-databases
       display-name: Scan all databases
       type: boolean
-      default: "false"
-      description: Scan all tables from all available ClickHouse databases except the system ones.
+      default: false
+      description: Scan all tables from all available Impala databases except the system ones.
 
     - ssl
     - ssh-tunnel
