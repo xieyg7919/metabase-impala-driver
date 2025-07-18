@@ -1,9 +1,11 @@
-{:paths ["src" "resources"]
+{
+ :description "Metabase Impala JDBC Driver"
+ :url "https://github.com/xieyg7919/metabase-impala-driver"
+ :license {:name "Apache License, Version 2.0"
+           :url "https://www.apache.org/licenses/LICENSE-2.0.txt"}
+ :paths ["src" "resources"]
  :mvn/repos {"cloudera" {:url "https://repository.cloudera.com/repository/cloudera-repos/"}
              "central" {:url "https://repo1.maven.org/maven2/"}}
- :deps {
-        ;Impala/ImpalaJDBC42 {:mvn/version "2.6.26.1031" :mvn/scope provided}
-        }
  :aliases {
            :build {:deps {io.github.clojure/tools.build {:git/tag "v0.9.4" :git/sha "76b78fe"}}
                    :ns-default build}

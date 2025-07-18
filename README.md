@@ -110,3 +110,5 @@ clojure -M:test
 ## 9.版本历史
 
 - v1.0.0: 初始版本，支持基本的Impala连接和查询功能
+
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
