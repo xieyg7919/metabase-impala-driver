@@ -39,13 +39,6 @@ driver:
     - ssl
     - ssh-tunnel
     - advanced-options-start
-#    - name: max-pool-size
-#      display-name: "Max pool connections(default 100)"
-#      placeholder: 100
-#      type: integer
-#      default: "100"
-#      visible-if:
-#        advanced-options: true
     - name: charset
       display-name: "Charset(default UTF-8)"
       placeholder: UTF-8
@@ -66,16 +59,6 @@ driver:
       type: integer
       visible-if:
         advanced-options: true
-    - name: batch-size
-      display-name: "Batch size(default 10000)"
-      placeholder: 10000
-      default: "10000"
-      type: integer
-      visible-if:
-          advanced-options: true
-#    - merge:
-#        - additional-options
-#        - placeholder: "connection_timeout=1000&socket_timeout=300000"
     - default-advanced-options
   connection-properties-include-tunnel-config: true
 init:
