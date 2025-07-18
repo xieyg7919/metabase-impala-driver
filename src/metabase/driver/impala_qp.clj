@@ -7,17 +7,19 @@
             [metabase.query-processor.timezone :as qp.timezone]
             [metabase.util.log :as log]
             [metabase.util.date-2 :as u.date]
+            ;[metabase.driver :as driver]
+            ;[metabase.driver.sql-jdbc.connection :as sql-jdbc.conn]
             [metabase.util.honey-sql-2 :as h2x])
   )
 
-(defmethod driver/connection-properties :impala
-  [_]
-  (merge
-    (sql-jdbc.conn/connection-properties (sql-jdbc.execute/the-driver))
-    {:connect-timeout {:value 30  ;; 将连接超时从默认10秒增加到30秒
-                       :default 10
-                       :type :integer
-                       :display-name "Connection timeout (seconds)"}}))
+;(defmethod driver/connection-properties :impala
+;  [_]
+;  (merge
+;    (driver/connection-properties (sql-jdbc.execute/the-driver))
+;    {:connect-timeout {:value 30  ;; 将连接超时从默认10秒增加到30秒
+;                       :default 10
+;                       :type :integer
+;                       :display-name "Connection timeout (seconds)"}}))
 
 (def gmt-timezone-mapping
   {

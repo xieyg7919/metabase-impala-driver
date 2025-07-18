@@ -1,13 +1,12 @@
 (ns metabase.driver.impala-introspection
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as str]
-            [metabase.config :as config]
             [metabase.driver :as driver]
-            [metabase.driver.ddl.interface :as ddl.i]
             [metabase.driver.sql-jdbc.connection :as sql-jdbc.conn]
             [metabase.driver.sql-jdbc.sync :as sql-jdbc.sync]
             [metabase.driver.sql-jdbc.sync.describe-table :as sql-jdbc.describe-table]
             [metabase.util :as u])
+  (:import (java.sql DatabaseMetaData))
   )
 
 (set! *warn-on-reflection* true)
